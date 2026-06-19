@@ -212,7 +212,7 @@ class Diff:
                 'awayPaths': self.away_paths,
                 'oldProperties': old_props,
                 'newProperties': cur_props,
-                'commitHash': commit.hg_hash,
+                'commitHash': commit.src_hash,
                 'type': self.kind.value,
                 'fileType': self.file_type.value,
                 'hunks': hunks,
@@ -451,7 +451,7 @@ class Diff:
                           sourceMachine=conduit.hostname,
                           sourceControlSystem='hg',
                           sourceControlPath='/',
-                          sourceControlBaseRevision=self.commit.parent().hg_hash,
+                          sourceControlBaseRevision=self.commit.parent().src_hash,
                           creationMethod='phlay',
                           lintStatus='none',
                           unitStatus='none',
@@ -474,9 +474,9 @@ class Diff:
                            'time': int(self.commit.unix_date),
                            'summary': self.commit.subject,
                            'message': self.commit.raw_body.strip(),
-                           'commit': self.commit.hg_hash,
+                           'commit': self.commit.src_hash,
                            'tree': self.commit.tree_hash,
-                           'parents': [self.commit.parent().hg_hash],
+                           'parents': [self.commit.parent().src_hash],
                            'rev': self.commit.commit_hash,
                        }
                    }))
@@ -648,17 +648,17 @@ class Commit(Cached):
         # Check if this commit has a corresponding mercurial hash already
         # computed and cached.
         try:
-            self.hg_hash = check_output([
+            self.src_hash = check_output([
                 'git', 'cinnabar', 'git2hg', self.commit_hash
             ]).decode().strip()
 
             # If we don't have a valid cinnabar hash, fall-back. If
             # '--hg-bundle' is passed, this will be corrected before pushing.
-            if self.hg_hash == NULL_SHA1:
-                self.hg_hash = self.commit_hash
+            if self.src_hash == NULL_SHA1:
+                self.src_hash = self.commit_hash
         except (CalledProcessError, FileNotFoundError):
             # Handle git-cinnabar being uninstalled
-            self.hg_hash = self.commit_hash
+            self.src_hash = self.commit_hash
 
 
     def parent(self):
